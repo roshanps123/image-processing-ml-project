@@ -1,0 +1,66 @@
+import librosa
+from PIL import Image, ImageDraw
+
+def evaluate_brick_quality(audio_path):
+    # Load audio file
+    y, sr = librosa.load(audio_path, sr=None)
+
+    # Set parameters for spectrogram computation
+    n_fft = 2048
+    hop_length = 512
+
+    # Compute mel spectrogram
+    spec = librosa.feature.melspectrogram(y, sr, n_fft=n_fft, hop_length=hop_length, fmax=22000)
+
+    # Perform power to decibel (dB) image transformation
+    spec_db = librosa.power_to_db(spec)
+
+    # Example: Implement a quality evaluation algorithm based on the characteristics of the audio
+    # For simplicity, let's assume any peak in the spectrogram is considered as metal quality
+    is_metal_quality = spec_db.max() > 0
+
+    return "metal" if is_metal_quality else "cardboard"
+
+def display_result_on_dot_matrix(result):
+    # Create an image for the dot matrix display
+    image_width = 300
+    image_height = 100
+    image = Image.new("RGB", (image_width, image_height), color=(255, 255, 255))  # White background
+    draw = ImageDraw.Draw(image)
+
+    # Define RGB values for metal and cardboard
+    metal_color = (200, 0, 0)  # Dark red
+    cardboard_color = (0, 0, 200)  # Dark blue
+
+    # Draw dots based on the result
+    for i in range(image_width // 30):  # Assuming 30 pixels per dot
+        dot_x = i * 30
+        dot_y = image_height // 2
+
+        if result == "metal":
+            dot_color = metal_color
+        else:
+            dot_color = cardboard_color
+
+        draw.ellipse((dot_x, dot_y - 15, dot_x + 30, dot_y + 15), fill=dot_color)
+
+    # Display the dot matrix image
+    image.show()
+
+# Paths to the provided audio files
+cardboard_audio_1 = r"C:\Users\sanap\Downloads\cardboard1.mp3"
+cardboard_audio_2 = r"C:\Users\sanap\Downloads\cardboard2.mp3"
+metal_audio_1 = r"C:\Users\sanap\Downloads\metal_banging1.mp3"
+metal_audio_2 = r"C:\Users\sanap\Downloads\metal_banging2.mp3"
+
+# Evaluate and display results for each audio file
+result_cardboard_1 = evaluate_brick_quality(cardboard_audio_1)
+result_cardboard_2 = evaluate_brick_quality(cardboard_audio_2)
+result_metal_1 = evaluate_brick_quality(metal_audio_1)
+result_metal_2 = evaluate_brick_quality(metal_audio_2)
+
+# Display results on dot matrix display
+display_result_on_dot_matrix(result_cardboard_1)
+display_result_on_dot_matrix(result_cardboard_2)
+display_result_on_dot_matrix(result_metal_1)
+display_result_on_dot_matrix(result_metal_2)
